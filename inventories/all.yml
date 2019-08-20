@@ -1,0 +1,5 @@
+---
+all:
+        hosts:
+                dm1558079970090.clserver.co.kr:
+                        ansible_port: 22401
