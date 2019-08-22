@@ -10,3 +10,17 @@
             debug:
                     msg: "debug message"
 
+          - name: git clone
+            git:
+                    repo: 'https://github.com/letsplayants/Ants-Auto-Trading-Bot'
+                    dest: /home/zlemy/deploy/ansible_test
+                    version: dev
+                    clone: no
+                    force: yes
+
+          - name: make virtual enviroment
+            pip:
+                    requirements: /home/zlemy/deploy/ansible_test/requirements.txt
+                    virtualenv: /home/zlemy/deploy/ansible_test/venv_ants
+                    virtualenv_python: python3.6
+
