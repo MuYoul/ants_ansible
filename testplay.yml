@@ -9,13 +9,23 @@
           - name: debug msg
             debug:
                     msg: "debug message"
+          - name: init vars
+            stat:
+                    path: /home/zlemy/deploy/ansible_test/configs
+            register: ant_home
 
-          - name: git clone
+          - name: backup old config for ants
+            copy:
+                    src: /home/zlemy/deploy/ansible_test/configs
+                    remote_src: yes
+                    dest: /home/zlemy/deploy/backup_ansible_test/configs
+            when: ant_home.stat.islink is defined
+
+          - name: git clone force
             git:
                     repo: 'https://github.com/letsplayants/Ants-Auto-Trading-Bot'
                     dest: /home/zlemy/deploy/ansible_test
                     version: dev
-                    clone: no
                     force: yes
 
           - name: make virtual enviroment
@@ -23,4 +33,9 @@
                     requirements: /home/zlemy/deploy/ansible_test/requirements.txt
                     virtualenv: /home/zlemy/deploy/ansible_test/venv_ants
                     virtualenv_python: python3.6
+
+          - name: regist crontab when server reboot
+            cron:
+                    reboot: yes
+                    job: sleep 60;cd /home/zlemy/deploy/ansible_test;/home/zlemy/deploy/ansible_test/run.sh
 
