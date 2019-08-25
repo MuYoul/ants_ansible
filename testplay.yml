@@ -18,8 +18,8 @@
             copy:
                     src: /home/zlemy/deploy/ansible_test/configs
                     remote_src: yes
-                    dest: /home/zlemy/deploy/backup_ansible_test/configs
-            when: ant_home.stat.islink is defined
+                    dest: /home/zlemy/deploy/backup_ansible_test
+            when: ant_home.stat.exists
 
           - name: git clone force
             git:
@@ -34,8 +34,15 @@
                     virtualenv: /home/zlemy/deploy/ansible_test/venv_ants
                     virtualenv_python: python3.6
 
-          - name: regist crontab when server reboot
+          - name: remove job from crontab(1/2)
+            shell: "crontab -u zlemy -l | grep -v ' Antsbot: /home/zlemy/deploy/ansible_test'  | crontab -u zlemy -"
+
+          - name: remove job from crontab(2/2)
+            shell:  "crontab -u zlemy -l | grep -v '/home/zlemy/deploy/ansible_test/run.sh'  | crontab -u zlemy -"
+
+          - name: register crontab when server reboot
             cron:
-                    reboot: yes
+                    name: "Antsbot: /home/zlemy/deploy/ansible_test"
+                    special_time: reboot
                     job: sleep 60;cd /home/zlemy/deploy/ansible_test;/home/zlemy/deploy/ansible_test/run.sh
 
