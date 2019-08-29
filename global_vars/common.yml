@@ -1,0 +1,18 @@
+---
+#설치관련된 user/group
+deploy_user: deploy
+deploy_group: deploy
+
+#common
+home_path: /home/deploy
+
+work_path: /home/deploy/works
+lib_path: /home/deploy/libs
+script_path: /home/deploy/scripts
+log_path: /home/deploy/logs
+
+ant_home_path: /home/{{ deploy_user }}/{{ telegram_bot_name }}
+
+#for telegram
+telegram_bot_token: "aaaa"
+telegram_owner: "33333"

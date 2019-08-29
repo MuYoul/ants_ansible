@@ -1,48 +1,52 @@
 ---
 - name: playbook test
   hosts: all
+  vars_files:
+          - "global_vars/common.yml"
   tasks:
-          - name: ping test
-            ping: 
-          - name: command test
-            command: /usr/bin/python --version
           - name: debug msg
             debug:
-                    msg: "debug message"
+                    msg: "debug message : {{ telegram_bot_name }}"
+
           - name: init vars
             stat:
-                    path: /home/zlemy/deploy/ansible_test/configs
+                    path: "{{ ant_home_path }}/configs"
             register: ant_home
 
           - name: backup old config for ants
             copy:
-                    src: /home/zlemy/deploy/ansible_test/configs
+                    src: "{{ ant_home_path }}/configs"
                     remote_src: yes
-                    dest: /home/zlemy/deploy/backup_ansible_test
+                    dest: "{{ ant_home_path }}_backup"
             when: ant_home.stat.exists
 
           - name: git clone force
             git:
                     repo: 'https://github.com/letsplayants/Ants-Auto-Trading-Bot'
-                    dest: /home/zlemy/deploy/ansible_test
+                    dest: "{{ ant_home_path }}" 
                     version: dev
                     force: yes
 
+          - name: config for ant's telegram
+            template:
+                    src: templates/telegram.conf.j2
+                    dest: "{{ ant_home_path }}/configs/telegram.conf"
+
           - name: make virtual enviroment
             pip:
-                    requirements: /home/zlemy/deploy/ansible_test/requirements.txt
-                    virtualenv: /home/zlemy/deploy/ansible_test/venv_ants
+                    requirements: "{{ ant_home_path }}/requirements.txt"
+                    virtualenv: "{{ ant_home_path }}/venv_ants"
                     virtualenv_python: python3.6
 
           - name: remove job from crontab(1/2)
-            shell: "crontab -u zlemy -l | grep -v ' Antsbot: /home/zlemy/deploy/ansible_test'  | crontab -u zlemy -"
+            shell: "crontab -u {{ deploy_user }} -l | grep -v ' Antsbot: {{ ant_home_path }}'  | crontab -u {{ deploy_user }} -"
 
           - name: remove job from crontab(2/2)
-            shell:  "crontab -u zlemy -l | grep -v '/home/zlemy/deploy/ansible_test/run.sh'  | crontab -u zlemy -"
+            shell:  "crontab -u {{ deploy_user }} -l | grep -v '{{ ant_home_path }}/run.sh'  | crontab -u {{ deploy_user }} -"
 
           - name: register crontab when server reboot
             cron:
-                    name: "Antsbot: /home/zlemy/deploy/ansible_test"
+                    name: "Antsbot: {{ ant_home_path }}"
                     special_time: reboot
-                    job: sleep 60;cd /home/zlemy/deploy/ansible_test;/home/zlemy/deploy/ansible_test/run.sh
+                    job: "sleep 60;cd {{ ant_home_path }};{{ ant_home_path }}/run.sh"
 
